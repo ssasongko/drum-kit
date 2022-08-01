@@ -1,27 +1,46 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
-const DrumPad = ({keyPad, id, urlAudio}) => {
-   const audio = useRef(null);
+const DrumPad = (props) => {
+  const audio = useRef(null);
+  const check = useRef(null);
 
-   const hitKey = () => {
-     audio.current.play()
-     audio.current.currentTime = 0
-   };
+  useEffect(()=>{
+    document.addEventListener("keydown",handleKeyAudio)
+    window.focus()
 
-   const playKey = () => {
-     console.log("playkey");
-   };
+    return () => document.removeEventListener("keydown", handleKeyAudio);
+  })
 
-    return (
-      <div
-        className="drum-pad border gap p-5 cursor-pointer bg-white"
+  const handleKeyAudio = (e) => {if(e.keyCode === props.id.charCodeAt ()) hitKey()};
+
+  const hitKey = () => {
+    
+    let playPromise = audio.current.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(_ => {
+          audio.current.play()
+          audio.current.currentTime = 0
+
+          props.onClick()
+        }).catch(error => {
+          // Auto-play was prevented
+          // Show paused UI.
+        });
+    }
+  };
+  
+  return (
+    <div
+      className="drum-pad border basis-1/3 md:basis-1 grow p-3 md:p-7 cursor-pointer bg-[#A66CFF] text-white hover:bg-[#9C9EFE] hover:shadow-lg focus:outline-none focus:ring-0 duration-150 ease-in-out"
         onClick={() => hitKey()}
-        id={id}
+        id={props.id}
+        ref={check}
       >
-        <p>{keyPad}</p>
-        <audio ref={audio} className="clip" src={urlAudio} id={id}></audio>
-      </div>
-    );
+        <p className='text-center font-bold'>{props.id}</p>
+        <audio ref={audio} className="clip" src={props.urlAudio} id={props.id}></audio>
+    </div>
+  );
 }
 
 export default DrumPad
